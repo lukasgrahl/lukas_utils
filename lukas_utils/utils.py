@@ -9,6 +9,9 @@ import numpy as np
 import pandas as pd
 from itertools import compress
 
+from io import StringIO
+import sys
+
 
 
 def load_pd_df(file_name, file_path, is_replace_nan=True, **kwargs):
@@ -37,10 +40,6 @@ def save_pd_df(df, file_name: str,):
         df.to_feather(os.path.join(file_path, file_name))
     else:
         raise KeyError(f"{file_type} unknown")
-
-
-from io import StringIO
-import sys
 
 
 class Capturing(list):
