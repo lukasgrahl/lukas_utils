@@ -1,5 +1,7 @@
 import os
 
 config = {
-	'path': os.getcwd()
+	'PROJECT_ROOT': os.getcwd(),
+	'DATA_DIR': os.path.join(os.getcwd(), "data"),
+	'GRAPHS_DIR': os.path.join(os.getcwd(), "graphs"),
 }

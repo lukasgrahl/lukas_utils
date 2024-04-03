@@ -1,5 +1,5 @@
-import utils
+from lukas_utils import config
 
 def test2():
-	print(utils.config)
+	print(config)
 	pass

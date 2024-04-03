@@ -13,7 +13,6 @@ from io import StringIO
 import sys
 
 
-
 def load_pd_df(file_name, file_path, is_replace_nan=True, **kwargs):
     """
     Load's pd.DataFrame from different file types
