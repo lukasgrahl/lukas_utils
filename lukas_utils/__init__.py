@@ -6,5 +6,4 @@ config = {
 	'GRAPHS_DIR': os.path.join(os.getcwd(), "graphs"),
 }
 
-from matplotlib import *
-from statsmodels import *
+from test import test2
