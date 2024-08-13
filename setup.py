@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup( 
 	name='lukas_utils', 
-	version='0.1', 
+	version='0.11', 
 	description='Common util functions for economics', 
 	author='Lukas A. Grahl', 
 	author_email='lukas.grahl@amkat.de', 
