@@ -1,15 +1,17 @@
-# Repo
+# Lukas utils
+Util functions for various python projects
 
-## init's
-Each init file needs to contain
+## *init.py* files
+Each *__init__.py* file needs to contain
 > from file import method
 
 where file.py holds method()
 
 ## How to manage packages
-Each package requires a setup.py file, containing package specific information.
-Once the setup.py file has been created run the following line in the parent directory:
-> python setup.py sdist bdist_wheel
+Each package requires a *pyproject.toml* file, containing package specific information.
+
+The following line initiates the package
+> python -m build
 
 ## Install
 Install package from GitHub
