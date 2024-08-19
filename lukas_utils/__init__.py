@@ -1,1 +1,1 @@
-from lukas_utils.helpers import test_func
+from lukas_utils.helpers import *
