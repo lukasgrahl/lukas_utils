@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: lukas_utils
+Version: 0.1
+Summary: utils functions
+Author: Lukas Grahl
+Requires-Python: >=3.5
+Description-Content-Type: text/markdown

@@ -1,8 +1,0 @@
-Metadata-Version: 2.1
-Name: verysimplemodule
-Version: 0.0.1
-Summary: My first Python package
-Author: Lukas Grahl
-Author-email: <lukas.g@amkat.de>
-
-My first Python package with a slightly longer description
