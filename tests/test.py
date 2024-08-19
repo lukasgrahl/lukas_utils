@@ -42,7 +42,8 @@ class TestPKL(unittest.TestCase):
 
 	def test_save_not_found(self):
 		with self.assertRaises(FileNotFoundError):
-			save_pkl(dict(), 'should_not_be_saved.pkl', f_path=os.path.join(os.getcwd(), "does_not_exist"))
+			save_pkl(dict(), 'should_not_be_saved.pkl', file_path=os.path.join(os.getcwd(), "does_not_exist"))
 
 if __name__ == "__main__":
+
 	unittest.main()

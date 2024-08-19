@@ -53,12 +53,12 @@ def save_df(df: pd.DataFrame, file_name: str, file_path: str = None):
         raise KeyError(f"{file_type} unknown")
 
 
-def save_pkl(file: dict, f_name: str, f_path: str = None):
-    if f_path is None:
+def save_pkl(file: dict, file_name: str, file_path: str = None):
+    if file_path is None:
         f_path = ""
     else:
-        check_path_existence(f_path)
-    t = open(os.path.join(f_path, f"{f_name}"), "wb+")
+        check_path_existence(file_path)
+    t = open(os.path.join(f_path, f"{file_name}"), "wb+")
     pickle.dump(file, t)
     t.close()
     pass
