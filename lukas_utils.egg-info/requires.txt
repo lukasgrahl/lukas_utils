@@ -1,0 +1,9 @@
+pandas
+regex
+matplotlib
+mysql-connector-python>=9.2.0
+sqlalchemy>=2.0.37
+toml
+joblib
+atpbar
+tqdm

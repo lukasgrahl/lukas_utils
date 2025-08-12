@@ -1,7 +1,20 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: lukas_utils
-Version: 0.1
-Summary: utils functions
-Author: Lukas Grahl
-Requires-Python: >=3.5
+Version: 0.1.0
+Summary: A test
+Author-email: Lukas <lukas.g@amkat.de>
+License: MIT
+Project-URL: Homepage, https://github.com/lukasgrahl/lukas_utils
+Requires-Python: >=3.6
 Description-Content-Type: text/markdown
+Requires-Dist: pandas
+Requires-Dist: regex
+Requires-Dist: matplotlib
+Requires-Dist: mysql-connector-python>=9.2.0
+Requires-Dist: sqlalchemy>=2.0.37
+Requires-Dist: toml
+Requires-Dist: joblib
+Requires-Dist: atpbar
+Requires-Dist: tqdm
+
+# Abc

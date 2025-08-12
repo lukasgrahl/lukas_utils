@@ -1,9 +1,28 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "lukas_utils"
-version = "0.1"
-description = "utils functions"
+version = "0.1.0"
+description = "A test"
+authors = [
+    {name = "Lukas", email = "lukas.g@amkat.de"}
+]
+license = {text = "MIT"}
 readme = "README.md"
-authors = [{ name = "Lukas Grahl" }]
-requires-python = ">=3.5"
-dependencies = ["pandas", "openpyxl"]
+requires-python = ">=3.6"
+dependencies = [
+    "pandas", 
+    "regex", 
+    "matplotlib",
+    "mysql-connector-python>=9.2.0",
+    "sqlalchemy>=2.0.37",
+    "toml",
+    "joblib",
+    "atpbar",
+    "tqdm",
+]
 
+[project.urls]
+"Homepage" = "https://github.com/lukasgrahl/lukas_utils"
