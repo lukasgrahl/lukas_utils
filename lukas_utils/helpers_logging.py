@@ -2,20 +2,19 @@ import logging
 import os
 import sys
 
-def _get_log_path():
-    if 'PATH_LOG_DIR' not in os.environ.keys():
-        raise KeyError(f'please add PATH_LOG_DIR to os.environ')
 
-    log_dir_path = os.environ['PATH_LOG_DIR']
+def _get_log_path():
+    if "PATH_LOG_DIR" not in os.environ.keys():
+        raise KeyError("please add PATH_LOG_DIR to os.environ")
+
+    log_dir_path = os.environ["PATH_LOG_DIR"]
     if not os.path.exists(log_dir_path):
         os.makedirs(log_dir_path)
 
     return log_dir_path
 
 
-def get_logger(
-    name, file_level: int = 10, stream_level: int = 20
-):
+def get_logger(name, file_level: int = 10, stream_level: int = 20):
     """
     Gets custom logger
     :param name: file name, ideally this should be os.path.basename(__file__)
