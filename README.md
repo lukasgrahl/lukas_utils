@@ -16,3 +16,6 @@ The following line initiates the package
 ## Install
 Install package from GitHub
 > pip install lukas_utils@git+https://github.com/lukasgrahl/lukas_utils#egg=lukas_utils
+
+Alternatively, if using uv, install as 
+> uv add lukas_utils@git+https://github.com/lukasgrahl/lukas_utils#egg=lukas_utils
