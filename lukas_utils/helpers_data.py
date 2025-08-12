@@ -49,13 +49,14 @@ class DataColumn:
 
 
 def _get_dtype_toml():
-    if 'PATH_DTYPE_TOML' not in os.environ.keys():
-        MY_LOGGER.error(f'please add PATH_DTYPE_TOML to os.environ as abspath')
-    if 'PATH_DTYPE_REGEX_TOML' not in os.environ.keys():
-        MY_LOGGER.error(f'please add PATH_DTYPE_REGEX_TOML to os.environ as abspath')
-    dct_dtype = toml.load(os.environ['PATH_DTYPE_TOML'])
-    dct_regex = toml.load(os.environ['PATH_DTYPE_REGEX_TOML'])
+    if "PATH_DTYPE_TOML" not in os.environ.keys():
+        MY_LOGGER.error("please add PATH_DTYPE_TOML to os.environ as abspath")
+    if "PATH_DTYPE_REGEX_TOML" not in os.environ.keys():
+        MY_LOGGER.error("please add PATH_DTYPE_REGEX_TOML to os.environ as abspath")
+    dct_dtype = toml.load(os.environ["PATH_DTYPE_TOML"])
+    dct_regex = toml.load(os.environ["PATH_DTYPE_REGEX_TOML"])
     return dct_dtype, dct_regex
+
 
 def _get_dict_freq_dtype_update(
     dct_dtype: dict = None, dct_regex: dict = None
