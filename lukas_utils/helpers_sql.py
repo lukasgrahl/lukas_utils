@@ -19,10 +19,24 @@ from .helpers_logging import get_logger
 MY_LOGGER = get_logger(os.path.basename(__file__), stream_level=20)
 
 
+def _get_sql_user_pw():
+    if "SQL_DB_USER" not in os.environ.keys():
+        MY_LOGGER.error(
+            "please add SQL_DB_USER to os.environ or specify both 'user' and 'pw' in get_sql_connection"
+        )
+    if "SQL_DB_PW" not in os.environ.keys():
+        MY_LOGGER.error(
+            "please add SQL_DB_PW to os.environ or specify both 'user' and 'pw' in get_sql_connection"
+        )
+
+    user, pw = os.environ["SQL_DB_USER"], os.environ["SQL_DB_PW"]
+    return user, pw
+
+
 def get_sql_connection(
-    database: str = "ambi_measures",
-    user: str = "root",
-    pw: str = "dummies",
+    database: str,
+    user: str = None,
+    pw: str = None,
     is_parallel: bool = False,
 ):
     """
@@ -30,6 +44,9 @@ def get_sql_connection(
     :param database:
     :return:
     """
+
+    if (user is None) or (pw is None):
+        user, pw = _get_sql_user_pw()
 
     global mySQLconnection, cursor, sql_engine
     if is_parallel:
@@ -87,7 +104,7 @@ def get_sql_tab_from_df(
     sql_con, cursor, _, _ = get_sql_connection(database=db_name)
     dct_dtype, dct_regex = _get_dict_freq_dtype_update(dct_dtype, dct_regex)
 
-    lst_tup_index, lst_tup_index_other = None, None
+    lst_tup_index_dtypes, lst_tup_index_other = None, None
     if df is not None:
         lst_cols = list(df.columns)
 
@@ -96,57 +113,61 @@ def get_sql_tab_from_df(
         if (df.index.name is not None) or (
             df.index.names != [None] * len(df.index.names)
         ):
-            lst_tup_index = [
+            lst_tup_index_dtypes = [
                 (i, _get_data_col_info(i, dct_dtype, dct_regex).dtype_sql)
                 for i in df.index.names
             ]
         else:
             MY_LOGGER.warning(
-                "df index does not have any names, using auto increment index"
+                f"{tab_name}: df index does not have any names, using auto increment index"
             )
-            lst_tup_index = [("idx", "int NOT NULL AUTO_INCREMENT")]
+            lst_tup_index_dtypes = [("idx", "int NOT NULL AUTO_INCREMENT")]
 
     elif lst_index is not None:
-        # multiple indeces
+        # multiple indexes
         if isinstance(lst_index[0], tuple):
+            # lst of additional indixes, they should be contained in the table
             lst_tup_index_other = lst_index[1:]
             lst_index = list(lst_index[0])
 
             # check if other indices are present in table
-            # if not present drop index from lst_index_other
+            # if not present, add index to table
             lst = [*chain(*[list(i) for i in lst_tup_index_other])]
             for i in lst:
                 if i not in [*chain(*[lst_index, lst_cols])]:
-                    lst_tup_index_other = [
-                        tpl for tpl in lst_tup_index_other if i not in tpl
-                    ]
-                    MY_LOGGER.warning(
-                        f"{i} is in further indices but not contained in table"
+                    # lst_tup_index_other = [
+                    #     tpl for tpl in lst_tup_index_other if i not in tpl
+                    # ]
+                    MY_LOGGER.debug(
+                        f"{i} is an additional index but not contained in table {tab_name}, adding {i} to table"
                     )
 
+                    # adding additional index to table columns, otherwise it cannot be added as an index later on
+                    lst_cols.append(i)
+
         # get lst_tup_index for first index
-        lst_tup_index = [
+        lst_tup_index_dtypes = [
             (i, _get_data_col_info(i, dct_dtype, dct_regex).dtype_sql)
             for i in lst_index
         ]
 
     # exclude index cols, avoiding double counting
-    lst = [c for c in lst_cols if c in lst_tup_index]
+    lst = [c for c in lst_cols if c in lst_tup_index_dtypes]
     if len(lst) > 0:
         MY_LOGGER.warning(
             f'following columns are both in index and columns: {", ".join(lst)}'
         )
 
-    lst_cols = [c for c in lst_cols if c not in [i[0] for i in lst_tup_index]]
+    lst_cols = [c for c in lst_cols if c not in [i[0] for i in lst_tup_index_dtypes]]
     lst_col_dtypes = [_get_data_col_info(col, dct_dtype, dct_regex) for col in lst_cols]
 
     if auto_increment_index is not None:
-        lst_tup_index += [(auto_increment_index, "int NOT NULL AUTO_INCREMENT")]
+        lst_tup_index_dtypes += [(auto_increment_index, "int NOT NULL AUTO_INCREMENT")]
 
     if is_drop_table:
         cursor.execute(f"drop table if exists {db_name}.{tab_name}")
 
-    str_sql_index = ",\n".join([" ".join(t) for t in lst_tup_index])
+    str_sql_index = ",\n".join([" ".join(t) for t in lst_tup_index_dtypes])
     str_sql_cols = ",\n".join(
         [c.name + f" {c.dtype_sql} default null" for c in lst_col_dtypes]
     )
@@ -161,7 +182,7 @@ def get_sql_tab_from_df(
                 CREATE TABLE IF NOT EXISTS {db_name}.{tab_name} (
                     {str_sql_index},
                     {str_sql_cols},
-              KEY `Index_1` ( {', '.join([t[0] for t in lst_tup_index])} ) USING BTREE
+              KEY `Index_1` ( {', '.join([t[0] for t in lst_tup_index_dtypes])} ) USING BTREE
               )
               ENGINE=MyISAM DEFAULT CHARSET=utf8mb4
         """
@@ -203,10 +224,32 @@ def write_df_to_sql(
     if (tab_name is None) or (df is None) or df.empty:
         return None
 
+    db_name = str(sql_eng.engine.url).split("/")[-1]
+    lst_sql_col_names = list(
+        pd.read_sql(
+            f"""
+                            SELECT `COLUMN_NAME` FROM `INFORMATION_SCHEMA`.`COLUMNS`
+                            WHERE `TABLE_SCHEMA`='{db_name}'
+                            AND `TABLE_NAME`='{tab_name}'
+                                        """,
+            sql_eng,
+        ).values.ravel()
+    )
+
     df = df_cast_data(df, dct_dtype=dct_dtype, dct_regex=dct_regex)
     for col in df.columns:
         if df[col].dtype == float:
             df[col] = df[col].replace({np.inf: np.nan, -np.inf: np.nan})
+
+    lst_df_cols_not_in_table = [
+        col for col in df.columns if col not in lst_sql_col_names
+    ]
+    if len(lst_df_cols_not_in_table) > 0:
+        MY_LOGGER.warning(
+            f'Dropped following columns which are not in SQL table {tab_name}: {", ".join(lst_df_cols_not_in_table)}'
+        )
+        df = df.drop(lst_sql_col_names, axis=1)
+
     df.to_sql(
         name=tab_name,
         con=sql_eng,
