@@ -124,6 +124,18 @@ def get_sql_tab_from_df(
             lst_tup_index_dtypes = [("idx", "int NOT NULL AUTO_INCREMENT")]
 
     elif lst_index is not None:
+        # check if all items are of tuple dtype
+        lst_index = [(i,) if not isinstance(i, tuple) else i for i in lst_index]
+
+        # warning for potential df indices
+        if df is not None:
+            if (df.index.name is not None) or (
+                df.index.names != [None] * len(df.index.names)
+            ):
+                MY_LOGGER.warning(
+                    f"{tab_name}: df has index {df.index.name} and lst_index {lst_index}, will use ONLY lst_index"
+                )
+
         # multiple indexes
         if isinstance(lst_index[0], tuple):
             # lst of additional indixes, they should be contained in the table
@@ -131,7 +143,7 @@ def get_sql_tab_from_df(
             lst_index = list(lst_index[0])
 
             # check if other indices are present in table
-            # if not present, add index to table
+            # if not present, add index to table definition
             lst = [*chain(*[list(i) for i in lst_tup_index_other])]
             for i in lst:
                 if i not in [*chain(*[lst_index, lst_cols])]:
@@ -145,7 +157,7 @@ def get_sql_tab_from_df(
                     # adding additional index to table columns, otherwise it cannot be added as an index later on
                     lst_cols.append(i)
 
-        # get lst_tup_index for first index
+        # get lst_tup_index for main index
         lst_tup_index_dtypes = [
             (i, _get_data_col_info(i, dct_dtype, dct_regex).dtype_sql)
             for i in lst_index
@@ -171,6 +183,8 @@ def get_sql_tab_from_df(
     str_sql_cols = ",\n".join(
         [c.name + f" {c.dtype_sql} default null" for c in lst_col_dtypes]
     )
+
+    # check if table exists
     cursor.execute(f"""
         SELECT TABLE_NAME FROM INFORMATION_SCHEMA.tables
         WHERE TABLE_SCHEMA = '{db_name}'
@@ -178,6 +192,7 @@ def get_sql_tab_from_df(
     """)
     is_tab_exist = [*chain(*[*cursor])] == [tab_name]
 
+    # create table
     str_sql_req = f"""
                 CREATE TABLE IF NOT EXISTS {db_name}.{tab_name} (
                     {str_sql_index},
@@ -203,6 +218,7 @@ def get_sql_tab_from_df(
             cursor.execute(s)
         sql_con.commit()
 
+    # create table
     if not is_tab_exist:
         MY_LOGGER.info(f"created: {db_name}.{tab_name}")
     elif is_tab_exist and (not is_drop_table):
