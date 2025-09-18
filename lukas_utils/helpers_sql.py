@@ -205,7 +205,16 @@ def get_sql_tab_from_df(
     sql_con.commit()
 
     # add other indices to table
-    if (lst_tup_index_other is not None) and len(lst_tup_index_other) > 0:
+    # only add indices if table is newly created: if dropped, or if not dropped but didn't exist
+    if (
+        (lst_tup_index_other is not None)
+        and (len(lst_tup_index_other) > 0)
+        and (
+            (is_drop_table is True)
+            or (is_drop_table is False and is_tab_exist is False)
+        )
+    ):
+        # this shouldn't be needed anymore
         if not is_drop_table:
             MY_LOGGER.info(
                 "is_drop_table set to FALSE, adding additional indices may take longer"
