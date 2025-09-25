@@ -273,7 +273,7 @@ def write_df_to_sql(
         MY_LOGGER.warning(
             f'Dropped following columns which are not in SQL table {tab_name}: {", ".join(lst_df_cols_not_in_table)}'
         )
-        df = df.drop(lst_sql_col_names, axis=1)
+        df = df.drop(lst_df_cols_not_in_table, axis=1)
 
     df.to_sql(
         name=tab_name,
