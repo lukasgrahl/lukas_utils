@@ -252,6 +252,62 @@ def df_merge_dt_freq(
     :return:
     """
 
+    df_l = df_left.copy()
+    df_r = df_right.copy()
+    assert df_l.index.dtype == "datetime64[ns]", "df does not have datetime index"
+    assert df_r.index.dtype == "datetime64[ns]", "df does not have datetime index"
+    assert str_merge_how in [
+        "outer",
+        "left",
+    ], f"function not defined for str_merge_how={str_merge_how}, for 'right' swap dfs!"
+
+    lf_left, lf_left_ord, hf_left, hf_left_ord = _get_lowest_freq(
+        df_l, dct_dtype, dct_regex
+    )
+    lf_right, lf_right_ord, hf_right, hf_right_ord = _get_lowest_freq(
+        df_r, dct_dtype, dct_regex
+    )
+
+    if hf_left_ord > hf_right_ord:
+        df_l["key"] = df_l.index.to_period(hf_right).to_timestamp()
+
+        if str_merge_how == "outer":
+            df = pd.merge(df_l, df_r, left_on="key", right_index=True, how="outer")
+            name = df.index.name
+            if name is None:
+                name = "index"
+            df = df.reset_index()
+            df["calendardate"] = df[name].fillna(df["key"])
+            df = df.set_index(
+                "calendardate",
+            )
+
+        else:
+            df = pd.merge(
+                df_l, df_r, left_on="key", right_index=True, how=str_merge_how
+            )
+
+    elif hf_left_ord == hf_right_ord:
+        df_l.index = df_l.index.to_period(hf_left)
+        df_r.index = df_r.index.to_period(hf_right)
+        df = df_l.join(df_r, how=str_merge_how)
+        df.index = df.index.to_timestamp()
+
+    else:
+        df_r["key"] = df_r.index.to_period(hf_left).to_timestamp()
+        df_r = df_r.sort_index().groupby("key").last()
+        df = df_l.join(df_r, how=str_merge_how)
+
+    for col in ["index", "key"]:
+        if col in df.columns:
+            df = df.drop(col, axis=1)
+
+    df.index.name = "calendardate"
+    df = df_cast_data(
+        df.reset_index(), dct_dtype=dct_dtype, dct_regex=dct_regex
+    ).set_index("calendardate")
+    return df
+
 
 def lst_df_merge_dt_freq(
     lst_df, how: str = "outer", dct_dtype: dict = None, dct_regex: dict = None
