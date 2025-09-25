@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lukas_utils"
-version = "0.1.0"
-description = "A test"
+version = "0.1.1"
+description = "My utils functions"
 authors = [
     {name = "Lukas", email = "lukas.g@amkat.de"}
 ]
