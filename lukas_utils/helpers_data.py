@@ -338,9 +338,11 @@ def df_cast_data(
     for dtype in _get_df_col_info(df, dct_dtype, dct_regex):
         try:
             if dtype.dtype == "category":
-                df[dtype.name] = pd.Categorical(df[dtype.name].astype(str))
+                df[dtype.name] = df[dtype.name].astype(object).astype("category")
             elif dtype.dtype == "categoryO":
-                df[dtype.name] = pd.Categorical(df[dtype.name], ordered=True)
+                df[dtype.name] = pd.Categorical(
+                    df[dtype.name].astype(object), ordered=True
+                )
             else:
                 df[dtype.name] = df[dtype.name].astype(dtype.dtype)
 
