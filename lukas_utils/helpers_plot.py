@@ -129,7 +129,7 @@ def get_2d_df_figure(
 
         if is_equalise_axis:
             d = pd.DataFrame({k: v.stack() for k, v in dict_dfs.items()}).stack()
-            ax.set_ylim(d.min() * 1.01, d.max() * 1.01)
+            ax.set_ylim(d.min() * 0.99, d.max() * 1.01)
 
         for idx_df, (legend, df) in enumerate(dict_dfs.items()):
             ax.tick_params(axis="x", labelrotation=flt_rotation)
