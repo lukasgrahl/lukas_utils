@@ -131,7 +131,7 @@ def _get_data_col_info(col, dct_dtypes, dct_regex) -> DataColumn:
     else:
         # use dct_col_regex_suffix instead of dct_col_regex if several regex
         if (len(dct_col_regex) > 1) and (len(dct_col_regex_not_suffix) == 1):
-            MY_LOGGER.info(
+            MY_LOGGER.warning(
                 f"{col} matches two regex patterns: {[i['regex_p'] for i in dct_col_regex.values()]}: USING {list(dct_col_regex_not_suffix.values())[0]['regex_p']}"
             )
             dct_col_regex = dct_col_regex_not_suffix

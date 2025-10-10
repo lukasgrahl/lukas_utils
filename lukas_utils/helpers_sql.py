@@ -16,7 +16,9 @@ from .helpers_data import (
 )
 from .helpers_logging import get_logger
 
-MY_LOGGER = get_logger(os.path.basename(__file__), stream_level=20)
+MY_LOGGER = get_logger(
+    os.path.basename(__file__),
+)
 
 
 def _get_sql_user_pw():
@@ -216,7 +218,7 @@ def get_sql_tab_from_df(
     ):
         # this shouldn't be needed anymore
         if not is_drop_table:
-            MY_LOGGER.info(
+            MY_LOGGER.debug(
                 "is_drop_table set to FALSE, adding additional indices may take longer"
             )
         lst = [
@@ -270,7 +272,7 @@ def write_df_to_sql(
         col for col in df.columns if col not in lst_sql_col_names
     ]
     if len(lst_df_cols_not_in_table) > 0:
-        MY_LOGGER.warning(
+        MY_LOGGER.debug(
             f'Dropped following columns which are not in SQL table {tab_name}: {", ".join(lst_df_cols_not_in_table)}'
         )
         df = df.drop(lst_df_cols_not_in_table, axis=1)
