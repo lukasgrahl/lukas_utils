@@ -25,12 +25,12 @@ def _get_environ_vars():
     if is_not_log_stream:
         level_log_stream = 20
     else:
-        level_log_stream = os.environ["LEVEL_LOG_STREAM"]
+        level_log_stream = int(os.environ["LEVEL_LOG_STREAM"])
 
     if is_not_log_file:
         level_log_file = 10
     else:
-        level_log_file = os.environ["LEVEL_LOG_FILE"]
+        level_log_file = int(os.environ["LEVEL_LOG_FILE"])
 
     # makedir if needed
     if not os.path.exists(log_dir_path):
