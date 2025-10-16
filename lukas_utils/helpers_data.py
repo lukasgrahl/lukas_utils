@@ -17,7 +17,8 @@ class DataColumn:
         freq: str = None,
         dtype_sql: str = None,
         is_default: bool = False,
-        **kwargs,
+        is_suffix: bool = False,
+        regex_p: object = None,
     ):
         dct_tup_freq = {"D": 8, "W": 7, "M": 6, "Q": 5, "Y": 4, None: 0}
         dct_dtype_sql = {
@@ -37,6 +38,15 @@ class DataColumn:
             else:
                 d = "varchar(25)"
             self.dtype_sql = d
+
+        # get character length for varcahr
+        match = re.search(r"(?<=varchar\()\d{1,3}(?=\))", self.dtype_sql)
+        if match is not None:
+            self.is_varchar = True
+            self.varchar_len = int(match[0])
+        else:
+            self.is_varchar = False
+            self.varchar_len = None
 
         self.name = name
         self.dtype = dtype
@@ -141,7 +151,7 @@ def _get_data_col_info(col, dct_dtypes, dct_regex) -> DataColumn:
 
         # if regex cleaned col in dct_dtypes, then use its specification
         if col_cleaned in dct_dtypes.keys():
-            # replace c dtypes with regex dtpyes if any
+            # replace c dtypes with regex dtypes if any
             d = dct_dtypes[col_cleaned] | {
                 k: v for k, v in dtype_regex.items() if v != ""
             }
@@ -343,11 +353,20 @@ def df_cast_data(
                 df[dtype.name] = pd.Categorical(
                     df[dtype.name].astype(object), ordered=True
                 )
+            elif dtype.is_varchar:
+                if (
+                    not df[dtype.name].astype(str).apply(lambda x: len(x)).max()
+                    <= dtype.varchar_len
+                ):
+                    MY_LOGGER.warning(
+                        f"{dtype.name} exceeds SQL varchar length {dtype.varchar_len}"
+                    )
+                df[dtype.name] = df[dtype.name].astype(dtype.dtype)
             else:
                 df[dtype.name] = df[dtype.name].astype(dtype.dtype)
 
         except Exception as e:
-            MY_LOGGER.warning(f"ERROR for {dtype.name} of type {dtype}: {e}")
+            MY_LOGGER.warning(f"ERROR for {dtype.name} of type {dtype.dtype}: {e}")
 
     if is_index_dropped:
         df = df.set_index(col_idx_name)

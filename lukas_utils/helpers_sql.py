@@ -67,7 +67,7 @@ def get_sql_connection(
             )
             sql_engine_con = sql_engine.connect()
 
-        mySQLconnection, cursor = None, None
+        # mySQLconnection, cursor = None, None
 
     else:
         sql_engine = sqlalchemy.create_engine(
@@ -75,13 +75,13 @@ def get_sql_connection(
         )
         sql_engine_con = sql_engine.connect()
 
-        mySQLconnection = mysql.connector.connect(
-            host="localhost",
-            database=database,
-            user=user,
-            password=pw,
-        )
-        cursor = mySQLconnection.cursor()
+    mySQLconnection = mysql.connector.connect(
+        host="localhost",
+        database=database,
+        user=user,
+        password=pw,
+    )
+    cursor = mySQLconnection.cursor()
 
     return mySQLconnection, cursor, sql_engine, sql_engine_con
 
@@ -103,8 +103,22 @@ def get_sql_tab_from_df(
         MY_LOGGER.info("no table created for tab name None")
         return None
 
-    sql_con, cursor, _, _ = get_sql_connection(database=db_name)
+    sql_con, cursor, _, sql_eng = get_sql_connection(database=db_name, is_parallel=True)
+
     dct_dtype, dct_regex = _get_dict_freq_dtype_update(dct_dtype, dct_regex)
+
+    # check if table exists
+    req = f"""
+        SELECT TABLE_NAME FROM INFORMATION_SCHEMA.tables
+        WHERE TABLE_SCHEMA = '{db_name}'
+        AND TABLE_NAME = '{tab_name}'
+    """
+    is_tab_exist = len(pd.read_sql_query(req, sql_eng)) == 1
+    # is_tab_exist = [*chain(*[*cursor])] == [tab_name]
+
+    if is_tab_exist and (not is_drop_table):
+        MY_LOGGER.info(f"tab existed, not overwritten: {tab_name}")
+        return None
 
     lst_tup_index_dtypes, lst_tup_index_other = None, None
     if df is not None:
@@ -186,14 +200,6 @@ def get_sql_tab_from_df(
         [c.name + f" {c.dtype_sql} default null" for c in lst_col_dtypes]
     )
 
-    # check if table exists
-    cursor.execute(f"""
-        SELECT TABLE_NAME FROM INFORMATION_SCHEMA.tables
-        WHERE TABLE_SCHEMA = '{db_name}'
-        AND TABLE_NAME = '{tab_name}'
-    """)
-    is_tab_exist = [*chain(*[*cursor])] == [tab_name]
-
     # create table
     str_sql_req = f"""
                 CREATE TABLE IF NOT EXISTS {db_name}.{tab_name} (
@@ -232,9 +238,8 @@ def get_sql_tab_from_df(
     # create table
     if not is_tab_exist:
         MY_LOGGER.info(f"created: {db_name}.{tab_name}")
-    elif is_tab_exist and (not is_drop_table):
-        MY_LOGGER.info(f"tab existed, not overwritten: {tab_name}")
 
+    sql_con.close()
     pass
 
 
