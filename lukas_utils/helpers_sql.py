@@ -282,13 +282,27 @@ def write_df_to_sql(
         )
         df = df.drop(lst_df_cols_not_in_table, axis=1)
 
-    df.to_sql(
-        name=tab_name,
-        con=sql_eng,
-        if_exists=if_exists,
-        index=is_index,
-        chunksize=chunksize,
-    )
+    # try, sleep, reattempt -> catch
+    try:
+        df.to_sql(
+            name=tab_name,
+            con=sql_eng,
+            if_exists=if_exists,
+            index=is_index,
+            chunksize=chunksize,
+        )
+    except Exception:
+        time.sleep(5)
+        try:
+            df.to_sql(
+                name=tab_name,
+                con=sql_eng,
+                if_exists=if_exists,
+                index=is_index,
+                chunksize=chunksize,
+            )
+        except Exception as e:
+            MY_LOGGER.warning(f"Failed to write table {tab_name}: {e}")
     del df
     gc.collect()
     pass
