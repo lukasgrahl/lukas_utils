@@ -110,6 +110,10 @@ def run_paralle_dec(
     if show_progress and ((parallel_engine != "multithreading") or n_process == 1):
         obj_iter = tqdm(lst_dct_args, total=len(lst_dct_args), desc=desc)
 
+    # run one iteration outside of parallel processing to create tables etc
+    dct = lst_dct_args.pop(0)
+    res.append(func(dct))
+
     start = time.time()
     if n_process == 1:
         res = [func(arg) for arg in obj_iter]
