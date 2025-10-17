@@ -120,9 +120,12 @@ def _get_data_col_info(col, dct_dtypes, dct_regex) -> DataColumn:
 
     # dct of regex cleaned column name, vvix_diff -> vvix, pq3_vvix -> vvix
     dct_col_regex = {
-        "".join(p.split(col)): v | {"regex_p": p}
+        # "".join(p.split(col)): v | {"regex_p": p}
+        # for p, v in dct_regex_p.items()
+        # if len(p.split(col)) > 1
+        p.search(col)[0]: v | {"regex_p": p}
         for p, v in dct_regex_p.items()
-        if len(p.split(col)) > 1
+        if p.search(col) is not None
     }
     # lst = [p.split(col) for p in dct_regex_p.keys()]
 
