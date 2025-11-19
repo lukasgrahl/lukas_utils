@@ -106,13 +106,37 @@ def run_paralle_dec(
         int(np.ceil(len(lst_dct_args) / n_process)), mp_map_chunksize
     )
 
+    # run one iteration outside of parallel processing to create tables etc
+    count, is_error = 0, True
+    pbar = tqdm(
+        total=len(lst_dct_args),
+        desc="Non-parallel processing until first non-error iterration",
+    )
+    while is_error:
+        dct = lst_dct_args.pop(0)
+        is_error = func(dct)
+
+        # warn if function does not return boolean indicator
+        if not isinstance(is_error, bool):
+            MY_LOGGER.error(
+                f"{func.__name__} did not return error boolean indicator: {is_error}"
+            )
+
+        count += 1
+
+        # show progess bar if error occured in first run
+        if count > 1:
+            pbar.update(1)
+
+    if count > 1:
+        MY_LOGGER.info(
+            f"First non-error run at iteration {count}, starting parallel processing now"
+        )
+
+    # start parallel processing
     obj_iter = lst_dct_args
     if show_progress and ((parallel_engine != "multithreading") or n_process == 1):
         obj_iter = tqdm(lst_dct_args, total=len(lst_dct_args), desc=desc)
-
-    # run one iteration outside of parallel processing to create tables etc
-    dct = lst_dct_args.pop(0)
-    res.append(func(dct))
 
     start = time.time()
     if n_process == 1:
@@ -128,7 +152,6 @@ def run_paralle_dec(
                 pool.imap(
                     func,
                     lst_dct_args,
-                    # chunksize=int(np.ceil(len(lst_dct_args) / n_process)),
                     chunksize=mp_map_chunksize,
                 ),
                 total=len(lst_dct_args),

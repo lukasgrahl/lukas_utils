@@ -59,15 +59,17 @@ def get_sql_connection(
             )
             sql_engine_con = sql_engine.connect()
         except Exception:
-            MY_LOGGER.error("MYSQL connection error, attempting reconnect")
-            time.sleep(20)
-            sql_engine = sqlalchemy.create_engine(
-                f"mysql+mysqlconnector://{user}:{pw}@localhost/{database}",
-                poolclass=NullPool,
-            )
-            sql_engine_con = sql_engine.connect()
+            time.sleep(np.random.randint(5, 60))
+            try:
+                sql_engine = sqlalchemy.create_engine(
+                    f"mysql+mysqlconnector://{user}:{pw}@localhost/{database}",
+                    poolclass=NullPool,
+                )
+                sql_engine_con = sql_engine.connect()
+            except Exception as e:
+                MY_LOGGER.error(f"MYSQL connection error, reconnection failed: {e}")
 
-        # mySQLconnection, cursor = None, None
+        mySQLconnection, cursor = None, None
 
     else:
         sql_engine = sqlalchemy.create_engine(
@@ -75,13 +77,13 @@ def get_sql_connection(
         )
         sql_engine_con = sql_engine.connect()
 
-    mySQLconnection = mysql.connector.connect(
-        host="localhost",
-        database=database,
-        user=user,
-        password=pw,
-    )
-    cursor = mySQLconnection.cursor()
+        mySQLconnection = mysql.connector.connect(
+            host="localhost",
+            database=database,
+            user=user,
+            password=pw,
+        )
+        cursor = mySQLconnection.cursor()
 
     return mySQLconnection, cursor, sql_engine, sql_engine_con
 
@@ -103,7 +105,8 @@ def get_sql_tab_from_df(
         MY_LOGGER.info("no table created for tab name None")
         return None
 
-    sql_con, cursor, _, sql_eng = get_sql_connection(database=db_name, is_parallel=True)
+    # get SQL connection parralel, when just checking whether table exsists
+    _, _, _, sql_eng = get_sql_connection(database=db_name, is_parallel=True)
 
     dct_dtype, dct_regex = _get_dict_freq_dtype_update(dct_dtype, dct_regex)
 
@@ -117,8 +120,13 @@ def get_sql_tab_from_df(
     # is_tab_exist = [*chain(*[*cursor])] == [tab_name]
 
     if is_tab_exist and (not is_drop_table):
-        MY_LOGGER.info(f"tab existed, not overwritten: {tab_name}")
+        MY_LOGGER.debug(f"tab existed, not overwritten: {tab_name}")
         return None
+
+    # if table didn't exists run normal connection
+    sql_con, cursor, _, sql_eng = get_sql_connection(
+        database=db_name,
+    )
 
     lst_tup_index_dtypes, lst_tup_index_other = None, None
     if df is not None:
@@ -223,10 +231,10 @@ def get_sql_tab_from_df(
         )
     ):
         # this shouldn't be needed anymore
-        # if not is_drop_table:
-        # MY_LOGGER.debug(
-        #     "is_drop_table set to FALSE, adding additional indices may take longer"
-        # )
+        if not is_drop_table:
+            MY_LOGGER.debug(
+                "is_drop_table set to FALSE, adding additional indices may take longer"
+            )
         lst = [
             f"ALTER TABLE {tab_name} ADD INDEX idx{i+1} ({", ".join(tpl)})"
             for i, tpl in enumerate(lst_tup_index_other)
