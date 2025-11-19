@@ -52,22 +52,22 @@ def get_sql_connection(
 
     global mySQLconnection, cursor, sql_engine
     if is_parallel:
-        try:
-            sql_engine = sqlalchemy.create_engine(
-                f"mysql+mysqlconnector://{user}:{pw}@localhost/{database}",
-                poolclass=NullPool,
-            )
-            sql_engine_con = sql_engine.connect()
-        except Exception:
-            time.sleep(np.random.randint(5, 60))
+        is_error, n_attempts = True, 0
+        while (is_error) and (n_attempts < 5):
             try:
                 sql_engine = sqlalchemy.create_engine(
                     f"mysql+mysqlconnector://{user}:{pw}@localhost/{database}",
                     poolclass=NullPool,
                 )
                 sql_engine_con = sql_engine.connect()
-            except Exception as e:
-                MY_LOGGER.error(f"MYSQL connection error, reconnection failed: {e}")
+                is_error = False
+            except Exception:
+                time.sleep(np.random.randint(5, 60))
+                n_attempts += 1
+
+        if is_error:
+            MY_LOGGER.error("MYSQL connection error, reconnection failed")
+            return None, None, None, None
 
         mySQLconnection, cursor = None, None
 
