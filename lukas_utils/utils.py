@@ -101,6 +101,10 @@ def run_paralle_dec(
         ]
     ), f"{parallel_engine} must be one of : multiprocess_imap, multiprocess_map, joblib, multithreading"
 
+    if desc is None:
+        desc = ""
+    desc = f"Parallel processing: {desc}"
+
     res = []
     mp_map_chunksize = min(
         int(np.ceil(len(lst_dct_args) / n_process)), mp_map_chunksize
