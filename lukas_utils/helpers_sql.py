@@ -156,9 +156,15 @@ def get_sql_tab_from_df(
             if (df.index.name is not None) or (
                 df.index.names != [None] * len(df.index.names)
             ):
+                lst_index += [tuple(df.index.names)]
+
+            else:
                 MY_LOGGER.warning(
-                    f"{tab_name}: df has index {df.index.name} and lst_index {lst_index}, will use ONLY lst_index"
+                    f"{tab_name}: df has index name None, will use ONLY lst_index: {lst_index}"
                 )
+
+        # drop duplicate indices
+        lst_index = list(set(lst_index))
 
         # multiple indexes
         if isinstance(lst_index[0], tuple):
