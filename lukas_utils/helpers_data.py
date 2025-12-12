@@ -357,7 +357,7 @@ def df_cast_data(
                     df[dtype.name].astype(object), ordered=True
                 )
             elif dtype.is_varchar:
-                if (
+                if (not df.empty) and (
                     not df[dtype.name].astype(str).apply(lambda x: len(x)).max()
                     <= dtype.varchar_len
                 ):
