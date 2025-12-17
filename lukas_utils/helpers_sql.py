@@ -266,6 +266,7 @@ def write_df_to_sql(
     dct_dtype: dict = None,
     dct_regex: dict = None,
     chunksize: int = 500,
+    is_warn_drop_cols: bool = True,
 ):
     if (tab_name is None) or (df is None) or df.empty:
         return None
@@ -291,9 +292,10 @@ def write_df_to_sql(
         col for col in df.columns if col not in lst_sql_col_names
     ]
     if len(lst_df_cols_not_in_table) > 0:
-        MY_LOGGER.debug(
-            f'Dropped following columns which are not in SQL table {tab_name}: {", ".join(lst_df_cols_not_in_table)}'
-        )
+        if is_warn_drop_cols:
+            MY_LOGGER.warning(
+                f'Dropped following columns which are not in SQL table {tab_name}: {", ".join(lst_df_cols_not_in_table)}'
+            )
         df = df.drop(lst_df_cols_not_in_table, axis=1)
 
     # try, sleep, reattempt -> catch
