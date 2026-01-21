@@ -209,6 +209,12 @@ def get_sql_tab_from_df(
     if is_drop_table:
         cursor.execute(f"drop table if exists {db_name}.{tab_name}")
 
+    # check forbidden column names
+    lst = [c.name for c in lst_col_dtypes] + [i[0] for i in lst_tup_index_dtypes]
+    lst = [i for i in lst if i in ["index", "double"]]
+    if len(lst) > 0:
+        raise KeyError(f'column names "{", ".join(lst)}"  ar not admissible in SQL')
+
     str_sql_index = ",\n".join([" ".join(t) for t in lst_tup_index_dtypes])
     str_sql_cols = ",\n".join(
         [c.name + f" {c.dtype_sql} default null" for c in lst_col_dtypes]
@@ -223,6 +229,7 @@ def get_sql_tab_from_df(
               )
               ENGINE=MyISAM DEFAULT CHARSET=utf8mb4
         """
+
     cursor.execute(str_sql_req)
     sql_con.commit()
 
