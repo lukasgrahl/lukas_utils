@@ -139,7 +139,7 @@ def _get_data_col_info(col, dct_dtypes, dct_regex) -> DataColumn:
         MY_LOGGER.warning(f"{col} matches two regex patterns, defaulting to float, D")
         return DataColumn(col, "float", "D", is_default=True)
     elif len(dct_col_regex) == 0:
-        MY_LOGGER.warning(f"{col} no info: defaulting to float, D")
+        MY_LOGGER.info(f"{col} no info: defaulting to float, D")
         return DataColumn(col, "float", "D", is_default=True)
     else:
         # use dct_col_regex_suffix instead of dct_col_regex if several regex
@@ -369,7 +369,7 @@ def df_cast_data(
                 df[dtype.name] = df[dtype.name].astype(dtype.dtype)
 
         except Exception as e:
-            MY_LOGGER.warning(f"ERROR for {dtype.name} of type {dtype.dtype}: {e}")
+            MY_LOGGER.error(f"ERROR for {dtype.name} of type {dtype.dtype}: {e}")
 
     if is_index_dropped:
         df = df.set_index(col_idx_name)
