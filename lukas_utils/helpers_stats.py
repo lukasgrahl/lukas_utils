@@ -31,3 +31,16 @@ def adf_test_summary(ser):
     print("\n")
 
     pass
+
+
+def winsorise(ser, p: float = 0.01):
+    ser = ser.copy()
+    lower, upper = ser.quantile(p), ser.quantile(1 - p)
+
+    flt = ser <= lower
+    ser.loc[flt] = [lower] * flt.sum()
+
+    flt = ser >= upper
+    ser.loc[flt] = [upper] * flt.sum()
+
+    return ser
