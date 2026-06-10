@@ -152,18 +152,17 @@ def run_paralle_dec(
     elif parallel_engine == "multiprocess_imap":
         res = []
         with multiprocessing.Pool(processes=n_process) as pool:
-            for r in tqdm(
-                pool.imap(
-                    func,
-                    lst_dct_args,
-                    chunksize=mp_map_chunksize,
-                ),
-                total=len(lst_dct_args),
+            iterator = pool.imap_unordered(
+                func,
+                lst_dct_args,
+                chunksize=mp_map_chunksize,
+            )
+            for result in tqdm(
+                iterator,
+                tesultotal=len(lst_dct_args),
                 **kwargs,
             ):
-                res.append(r)
-            pool.close()
-            pool.join()
+                res.append(result)
 
     elif parallel_engine == "multithreading":
         run_with_threading(func, obj_iter, n_process, desc)
@@ -172,18 +171,17 @@ def run_paralle_dec(
     elif parallel_engine == "multiprocess_map":
         res = []
         with multiprocessing.Pool(processes=n_process) as pool:
-            for r in tqdm(
-                pool.map(
-                    func,
-                    lst_dct_args,
-                    chunksize=mp_map_chunksize,
-                ),
-                total=len(lst_dct_args),
+            iterator = pool.map(
+                func,
+                lst_dct_args,
+                chunksize=mp_map_chunksize,
+            )
+            for result in tqdm(
+                iterator,
+                tesultotal=len(lst_dct_args),
                 **kwargs,
             ):
-                res.append(r)
-            pool.close()
-            pool.join()
+                res.append(result)
 
     if is_time_it:
         MY_LOGGER.info(
