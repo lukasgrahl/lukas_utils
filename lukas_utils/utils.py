@@ -158,7 +158,7 @@ def run_paralle_dec(
             )
             for result in tqdm(
                 iterator,
-                tesultotal=len(lst_dct_args),
+                total=len(lst_dct_args),
             ):
                 res.append(result)
 
@@ -176,7 +176,7 @@ def run_paralle_dec(
             )
             for result in tqdm(
                 iterator,
-                tesultotal=len(lst_dct_args),
+                total=len(lst_dct_args),
             ):
                 res.append(result)
 
