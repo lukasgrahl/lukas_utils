@@ -238,16 +238,8 @@ def get_sql_tab_from_df(
     if (
         (lst_tup_index_other is not None)
         and (len(lst_tup_index_other) > 0)
-        and (
-            (is_drop_table is True)
-            or (is_drop_table is False and is_tab_exist is False)
-        )
+        and ((is_drop_table is True) or (is_tab_exist is False))
     ):
-        # this shouldn't be needed anymore
-        if not is_drop_table:
-            MY_LOGGER.debug(
-                "is_drop_table set to FALSE, adding additional indices may take longer"
-            )
         lst = [
             f"ALTER TABLE {tab_name} ADD INDEX idx{i+1} ({", ".join(tpl)})"
             for i, tpl in enumerate(lst_tup_index_other)
