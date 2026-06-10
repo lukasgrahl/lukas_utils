@@ -106,7 +106,7 @@ def run_paralle_dec(
 
     res = []
     mp_map_chunksize = min(
-        int(np.ceil(len(lst_dct_args) / n_process)), mp_map_chunksize
+        mp_map_chunksize, max(1, len(lst_dct_args) // (n_process * 20))
     )
 
     # run one iteration outside of parallel processing to create tables etc
