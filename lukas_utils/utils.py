@@ -89,7 +89,6 @@ def run_paralle_dec(
     desc: str = None,
     parallel_engine: str = "multiprocess_imap",
     mp_map_chunksize: int = 50,
-    **kwargs,
 ):
     assert (
         parallel_engine
@@ -160,7 +159,6 @@ def run_paralle_dec(
             for result in tqdm(
                 iterator,
                 tesultotal=len(lst_dct_args),
-                **kwargs,
             ):
                 res.append(result)
 
@@ -179,7 +177,6 @@ def run_paralle_dec(
             for result in tqdm(
                 iterator,
                 tesultotal=len(lst_dct_args),
-                **kwargs,
             ):
                 res.append(result)
 
