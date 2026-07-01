@@ -282,7 +282,7 @@ def write_df_to_sql(
         ).values.ravel()
     )
 
-    df = df_cast_data(df, dct_dtype=dct_dtype, dct_regex=dct_regex)
+    df = df_cast_data(df, dct_dtype=dct_dtype, dct_regex=dct_regex, is_cast_index=True)
     for col in df.columns:
         if df[col].dtype == float:
             df[col] = df[col].replace({np.inf: np.nan, -np.inf: np.nan})
