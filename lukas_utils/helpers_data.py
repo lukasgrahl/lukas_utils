@@ -358,7 +358,7 @@ def df_cast_data(
                 )
             elif dtype.is_varchar:
                 if (not df.empty) and (
-                    not df[dtype.name].astype(str).apply(lambda x: len(x)).max()
+                    not df[dtype.name].astype(str).apply(lambda x: len(str(x))).max()
                     <= dtype.varchar_len
                 ):
                     MY_LOGGER.warning(
